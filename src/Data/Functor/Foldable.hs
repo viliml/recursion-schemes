@@ -3,7 +3,10 @@
 {-# LANGUAGE ConstrainedClassMethods #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE ScopedTypeVariables, DefaultSignatures, MultiParamTypeClasses, TypeOperators #-}
+{-# LANGUAGE CPP #-}
+#if __GLASGOW_HASKELL__ >= 860
 {-# LANGUAGE QuantifiedConstraints #-}
+#endif
 
 -----------------------------------------------------------------------------
 -- |
@@ -188,7 +191,11 @@ class Fixed t where
   --
   type Base t :: * -> *
 
+#if __GLASGOW_HASKELL__ >= 860
 class (forall a . Fixed (t a)) => Fixed1 t where
+#else
+class Fixed1 (t :: * -> *) where
+#endif
   type Base1 t :: * -> * -> *
 
 
@@ -317,7 +324,11 @@ distPara = distZygo embed
 distParaT :: (Corecursive t, Comonad w) => (forall b. Base t (w b) -> w (Base t b)) -> Base t (EnvT t w a) -> EnvT t w (Base t a)
 distParaT t = distZygoT embed t
 
+#if __GLASGOW_HASKELL__ >= 860
 class (forall a . Recursive (t a), Bifunctor (Base1 t), Functor t) => Recursive1 t
+#else
+class (Bifunctor (Base1 t), Functor t) => Recursive1 t
+#endif
 
 -- | A recursive datatype which can be rolled up one recursion layer at a time.
 --
@@ -413,7 +424,11 @@ fold = cata
 unfold :: Corecursive t => (a -> Base t a) -> a -> t
 unfold = ana
 
+#if __GLASGOW_HASKELL__ >= 860
 class (forall a . Corecursive (t a), Bifunctor (Base1 t), Functor t) => Corecursive1 t
+#else
+class (Bifunctor (Base1 t), Functor t) => Corecursive1 t
+#endif
 
 -- | An optimized version of @fold f . unfold g@.
 --
